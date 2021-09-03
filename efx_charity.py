@@ -108,7 +108,12 @@ def locate_envy_cycle(G):
     except NetworkXNoCycle:
         return False, None
 
+def make_self_envy_fn(old_assignment, valuation):
+    return lambda new_assignment: new_assignment.dot(valuation) > old_assignment.dot(valuation)
+
 def get_mea(s, assignments_inp, items, valuations, n):
+    # Todo -- get self mea
+    is_self_envy = make_self_envy_fn(assignments_inp[s,:], valuations[s])
     assignments = np.copy(assignments_inp)
     item_order = np.arange(len(assignments[0]))
     for i in item_order:
@@ -118,7 +123,7 @@ def get_mea(s, assignments_inp, items, valuations, n):
 
             # ensure there are enviers
             G = create_envy_digraph(assignments, valuations, n)
-            assert get_first_ancestor(G, s) != None
+            assert get_first_ancestor(G, s) != None or is_self_envy(assignments[s,:])
 
             # now search for MEA
             for k in item_order:
@@ -128,7 +133,7 @@ def get_mea(s, assignments_inp, items, valuations, n):
                     assignments[s,k] -= 1
                     # if no more enviers, then put it back and try a different one
                     G = create_envy_digraph(assignments, valuations, n)
-                    if get_first_ancestor(G, s) == None:
+                    if get_first_ancestor(G, s) == None and not is_self_envy(assignments[s,:]):
                         assignments[s,k] += 1
                         break
 
@@ -138,12 +143,14 @@ def get_mea(s, assignments_inp, items, valuations, n):
                     continue
                 assignments[s,k] -= 1
                 G = create_envy_digraph(assignments, valuations, n)
-                assert get_first_ancestor(G, s) == None
+                assert get_first_ancestor(G, s) == None and not is_self_envy(assignments[s,:])
                 assignments[s,k] += 1
             # choose first MEA here. (later, we can smartly look for a MEA we've seen...)
             G = create_envy_digraph(assignments, valuations, n)
             mea = get_first_ancestor(G, s)
-            assert mea != None
+            if mea == None:
+                assert is_self_envy(assignments[s,:])
+                mea = s
             return mea, i, assignments[s, :]
 
 def from_t_i_to_s_i(G, node):
