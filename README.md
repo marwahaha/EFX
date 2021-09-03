@@ -26,7 +26,7 @@ You need to install `numpy` and `networkx` packages.
 
 Then get the code:
 ```
-curl https://raw.githubusercontent.com/marwahaha/EFX/main/efx_charity.py
+curl https://raw.githubusercontent.com/marwahaha/EFX/main/efx_charity.py > efx_charity.py
 ```
 
 Then run it.

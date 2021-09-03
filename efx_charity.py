@@ -11,18 +11,18 @@ def row_inp_to_array(inp):
     return np.array([float(i) for i in inp.split(',')])
 
 def setup():
-    n = int(input('number of players:'))
+    n = int(input('number of players: '))
     assert n > 0, 'must be a positive integer'
 
-    t = int(input('number of item types:'))
+    t = int(input('number of item types: '))
     assert t > 0,  'must be a positive integer'
 
-    items = row_inp_to_array(input('number of items of each type:'))
+    items = row_inp_to_array(input('number of items of each type (comma-separated): '))
     assert len(items) == t, 'must be of length t=' + str(t)
 
     valuations = np.zeros((n,t))
     for i in range(n):
-        val_row = row_inp_to_array(input('valuation for player ' + str(i) + ':'))
+        val_row = row_inp_to_array(input('valuation for player ' + str(i) + ' (comma-separated): '))
         assert len(val_row) == t, 'must be of length t=' + str(t)
         valuations[i,:] = val_row
 
