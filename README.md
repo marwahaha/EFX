@@ -8,15 +8,11 @@ I've removed all randomness from the algorithm (I think..) This is to help debug
 
 There aren't any unit tests, but based on my ad hoc testing, I think it's working ok. We should write some.
 
-We could randomly generate inputs and see when it fails, and why.
-
-If it can't apply u2, it doesn't try with everyone.
-
-There's not a ton of logging into what moves are being made, but hopefully the `assignments` variable has what you need when the algorithm gets stuck.
+There's not a ton of logging into debugging the actual rules. Hopefully the `assignments` variable has what you need when the algorithm gets stuck.
 
 I hope it's bug-free, but if you find any issues please let me know.
 
-It would also be nice to save the inputs, so you don't have to enter them again if you don't want to. (Or load the inputs from a file.)
+Based on random inputs, it definitely gets stuck. And it could be my algorithm's fault -- in places where random choices were made, we could enumerate all options and try from there.
 
 Enjoy!
 
@@ -44,3 +40,5 @@ You need to install Jupyter notebook (it's pretty straightforward)
 Then clone this repository.
 
 Then use `efx_charity.ipynb` notebook.
+
+There are examples of randomly generated inputs and saving the input data as a python object.
