@@ -168,12 +168,23 @@ def get_first_ancestor(G, node):
         return node
     return None
 
-def run_u2_if_possible(n, assignments_inp, items, valuations):
+def run_u2_if_possible(n, assignments, items, valuations):
+    G = create_envy_digraph(assignments, valuations, n)
+    all_sources = [s for s,d in G.in_degree() if d == 0]
+    # choose a source s0
+    for s in all_sources:
+        print("trying U2 with source:", s)
+        success, assignments = try_u2_with_given_s0(n, assignments, items, valuations, s)
+        if success:
+            return success, assignments
+    return False, assignments
+
+def try_u2_with_given_s0(n, assignments_inp, items, valuations, s):
     assignments = np.copy(assignments_inp)
     G = create_envy_digraph(assignments, valuations, n)
     all_sources = [s for s,d in G.in_degree() if d == 0]
     # choose a source s0
-    sources = [all_sources[0]]
+    sources = [s]
     items_used = np.zeros(len(assignments[0]), dtype=int)
     zs = []
     t_i_list = []
@@ -228,9 +239,9 @@ def draw_envy(assignments, valuations, n):
     G = create_envy_digraph(assignments, valuations, n)
     nx.draw(G, with_labels=True)
 
-def run():
+def run(inputs=None):
     # setup
-    n, t, assignments, items, valuations = setup()
+    n, t, assignments, items, valuations = inputs if inputs else setup()
     # algorithm
     while True:
         # assert partial EFX
@@ -264,8 +275,8 @@ def run():
         print("COULD NOT APPLY U2 (!)")
         return n, t, assignments, items, valuations
 
-def run_and_check(draw=False):
-    n, t, assignments, items, valuations = run()
+def run_and_check(draw=False, inputs=None):
+    n, t, assignments, items, valuations = run(inputs=inputs)
     for idx,row in enumerate(assignments):
         print('player', idx, 'assignments:', row)
     assert check_all_efx(assignments, valuations), "EFX SHOULD HOLD"

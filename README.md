@@ -10,6 +10,8 @@ There aren't any unit tests, but based on my ad hoc testing, I think it's workin
 
 We could randomly generate inputs and see when it fails, and why.
 
+If it can't apply u2, it doesn't try with everyone.
+
 There's not a ton of logging into what moves are being made, but hopefully the `assignments` variable has what you need when the algorithm gets stuck.
 
 I hope it's bug-free, but if you find any issues please let me know.
