@@ -168,12 +168,12 @@ def get_first_ancestor(G, node):
         return node
     return None
 
-def run_u2_if_possible(n, assignments, items, valuations):
+def run_u2_if_possible(n, assignments, items, valuations, pr):
     G = create_envy_digraph(assignments, valuations, n)
     all_sources = [s for s,d in G.in_degree() if d == 0]
     # choose a source s0
     for s in all_sources:
-        print("trying U2 with source:", s)
+        pr("trying U2 with source:", s)
         success, assignments = try_u2_with_given_s0(n, assignments, items, valuations, s)
         if success:
             return success, assignments
@@ -239,7 +239,8 @@ def draw_envy(assignments, valuations, n):
     G = create_envy_digraph(assignments, valuations, n)
     nx.draw(G, with_labels=True)
 
-def run(inputs=None):
+def run(inputs=None, log=True):
+    pr = print if log else (lambda *x: None)
     # setup
     n, t, assignments, items, valuations = inputs if inputs else setup()
     # algorithm
@@ -250,7 +251,7 @@ def run(inputs=None):
         G = create_envy_digraph(assignments, valuations, n)
         is_cycle, cycle = locate_envy_cycle(G)
         while is_cycle:
-            print("DE-CYCLING GRAPH")
+            pr("DE-CYCLING GRAPH")
             cycle_mask = [e[0] for e in locate_envy_cycle(G)[1]]
             cycle_mask_new = cycle_mask[1:] + cycle_mask[0:1]
             assignments[cycle_mask_new] = assignments[cycle_mask]
@@ -264,19 +265,19 @@ def run(inputs=None):
         # run U0 if possible
         success, assignments = run_u0_if_possible(n, t, assignments, items, valuations)
         if success:
-            print("APPLIED U0")
+            pr("APPLIED U0")
             continue
-        print("COULD NOT APPLY U0")
+        pr("COULD NOT APPLY U0")
         # run U2 if possible
-        success, assignments = run_u2_if_possible(n, assignments, items, valuations)
+        success, assignments = run_u2_if_possible(n, assignments, items, valuations, pr)
         if success:
-            print("APPLIED U2")
+            pr("APPLIED U2")
             continue
         print("COULD NOT APPLY U2 (!)")
         return n, t, assignments, items, valuations
 
-def run_and_check(draw=False, inputs=None):
-    n, t, assignments, items, valuations = run(inputs=inputs)
+def run_and_check(draw=False, **kwargs):
+    n, t, assignments, items, valuations = run(**kwargs)
     for idx,row in enumerate(assignments):
         print('player', idx, 'assignments:', row)
     assert check_all_efx(assignments, valuations), "EFX SHOULD HOLD"
