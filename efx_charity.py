@@ -112,7 +112,6 @@ def make_self_envy_fn(old_assignment, valuation):
     return lambda new_assignment: new_assignment.dot(valuation) > old_assignment.dot(valuation)
 
 def get_mea(s, assignments_inp, items, valuations, n):
-    # Todo -- get self mea
     is_self_envy = make_self_envy_fn(assignments_inp[s,:], valuations[s])
     assignments = np.copy(assignments_inp)
     item_order = np.arange(len(assignments[0]))
@@ -145,7 +144,7 @@ def get_mea(s, assignments_inp, items, valuations, n):
                 G = create_envy_digraph(assignments, valuations, n)
                 assert get_first_ancestor(G, s) == None and not is_self_envy(assignments[s,:])
                 assignments[s,k] += 1
-            # choose first MEA here. (later, we can smartly look for a MEA we've seen...)
+            # choose first MEA here. (later, we can try every MEA....)
             G = create_envy_digraph(assignments, valuations, n)
             mea = get_first_ancestor(G, s)
             if mea == None:
