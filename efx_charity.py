@@ -1,6 +1,6 @@
 import numpy as np
 import networkx as nx
-from networkx.algorithms.cycles import find_cycle
+from networkx.algorithms.cycles import simple_cycles
 from networkx.exception import NetworkXNoCycle
 from networkx.algorithms.dag import is_directed_acyclic_graph
 from networkx.algorithms.dag import topological_sort
@@ -102,11 +102,11 @@ def create_envy_digraph(assignments, valuations, n):
     return nx.DiGraph(envy_edges)
 
 def locate_envy_cycle(G):
-    try:
-        cycle = find_cycle(G)
-        return True, cycle
-    except NetworkXNoCycle:
+    cycles = list(simple_cycles(G))
+    if len(cycles) == 0:
         return False, None
+    np.random.shuffle(cycles)
+    return True, cycles[0]
 
 def make_self_envy_fn(old_assignment, valuation):
     return lambda new_assignment: new_assignment.dot(valuation) > old_assignment.dot(valuation)
@@ -248,14 +248,15 @@ def run(inputs=None, log=True):
         assert check_all_efx(assignments, valuations), "this should be partial EFX"
         # de cycle graph if needed
         G = create_envy_digraph(assignments, valuations, n)
-        is_cycle, cycle = locate_envy_cycle(G)
-        while is_cycle:
-            pr("DE-CYCLING GRAPH")
-            cycle_mask = [e[0] for e in locate_envy_cycle(G)[1]]
-            cycle_mask_new = cycle_mask[1:] + cycle_mask[0:1]
-            assignments[cycle_mask_new] = assignments[cycle_mask]
-            G = create_envy_digraph(assignments, valuations, n)
+        if not is_directed_acyclic_graph(G):
             is_cycle, cycle = locate_envy_cycle(G)
+            while is_cycle:
+                pr("DE-CYCLING GRAPH")
+                cycle_mask = cycle
+                cycle_mask_new = cycle_mask[1:] + cycle_mask[0:1]
+                assignments[cycle_mask_new] = assignments[cycle_mask]
+                G = create_envy_digraph(assignments, valuations, n)
+                is_cycle, cycle = locate_envy_cycle(G)
         assert is_directed_acyclic_graph(G)
         # check if done
         if check_all_done(assignments, items):
