@@ -75,18 +75,23 @@ def check_all(assignments, valuations, fn):
             return False
     return True
 
-def check_all_done(assignments, items):
+def check_all_done(assignments, items, strict=True):
     # no more items to assign
-    return np.all(np.sum(assignments, axis=0) == items)
+    if strict:
+        return np.all(np.sum(assignments, axis=0) == items)
+    return np.all(np.sum(assignments, axis=0) >= items)
+
 
 def item_type_available(assignments, items, i):
     return np.sum(assignments[:, i]) < items[i]
 
 def run_u0_if_possible(n, t, assignments, items, valuations):
     item_order = np.arange(t)
+    np.random.shuffle(item_order)
     for i in item_order:
         if item_type_available(assignments, items, i):
             player_order = np.arange(n)
+            np.random.shuffle(player_order)
             for j in player_order:
                 assignments[j,i] += 1
                 if check_all_efx(assignments, valuations):
@@ -115,6 +120,7 @@ def get_mea(s, assignments_inp, items, valuations, n):
     is_self_envy = make_self_envy_fn(assignments_inp[s,:], valuations[s])
     assignments = np.copy(assignments_inp)
     item_order = np.arange(len(assignments[0]))
+    np.random.shuffle(item_order)
     for i in item_order:
         if item_type_available(assignments, items, i):
             # add type i item to source
@@ -170,6 +176,7 @@ def get_first_ancestor(G, node):
 def run_u2_if_possible(n, assignments, items, valuations, pr):
     G = create_envy_digraph(assignments, valuations, n)
     all_sources = [s for s,d in G.in_degree() if d == 0]
+    np.random.shuffle(all_sources)
     # choose a source s0
     for s in all_sources:
         pr("trying U2 with source:", s)
@@ -191,7 +198,7 @@ def try_u2_with_given_s0(n, assignments_inp, items, valuations, s):
     while True:
         # if no more items, then can't succeed
         items -= items_used
-        no_more_items = check_all_done(assignments, items)
+        no_more_items = check_all_done(assignments, items, strict=False)
         items += items_used
         if no_more_items:
             return False, assignments
@@ -260,7 +267,7 @@ def run(inputs=None, log=True):
         assert is_directed_acyclic_graph(G)
         # check if done
         if check_all_done(assignments, items):
-            print("DONE")
+            # print("DONE")
             return n, t, assignments, items, valuations
         # run U0 if possible
         success, assignments = run_u0_if_possible(n, t, assignments, items, valuations)
